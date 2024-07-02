@@ -1,0 +1,220 @@
+#include <iostream>
+#include <random>
+using namespace std;
+const int WIDTH = 10;
+const int HEIGHT = 10;
+ //生成随机迷宫函数
+void generateRandom(char maze[HEIGHT][WIDTH]) {
+    random_device rd; // 生成随机种子
+    mt19937 gen(rd()); // Using a seed to generate a random number generator
+    uniform_int_distribution<int> dist(0, 9); // 定义随机数分布
+
+    
+    for (int i = 0; i < HEIGHT; ++i) {
+        for (int j = 0; j < WIDTH; ++j) {
+                int choice = dist(gen);
+                if (choice < 3) {
+                    maze[i][j] = '#'; // 50%-WALL
+                } else if (choice < 8) {
+                    maze[i][j] = ' '; // 30%-EMPTY
+                } else if (choice >= 8&&choice<10) {
+                    maze[i][j] = '@'; // 10%-AWARD
+                } else if (choice == 10) {
+                    maze[i][j] = '&'; // 10%-PUNISH
+                }
+            }
+        }
+    
+     maze[9][9]='E';
+}
+
+
+//position settings for player1
+void displayMaze_1(char maze[HEIGHT][WIDTH], int x1, int y1, int x2, int y2) 
+{
+    for (int i = 0; i < HEIGHT; ++i) {
+        for (int j = 0; j < WIDTH; ++j) {
+            if (i == y1 && j == x1) {
+                cout << 'P'; // Player 1 position is P
+            } else if (i == y2 && j == x2) {
+                cout << 'L'; // Player 2 position is L
+            } else {
+                cout << maze[i][j];
+            }
+        }
+        cout << endl;
+    }
+}
+//position settings for player2
+void displayMaze_2(char maze[HEIGHT][WIDTH], int x2, int y2, int x1, int y1) 
+{
+    for (int i = 0; i < HEIGHT; ++i) {
+        for (int j = 0; j < WIDTH; ++j) {
+            if (i == y1 && j == x1) {
+                cout << 'P'; // Player 1 position is P
+            } else if (i == y2 && j == x2) {
+                cout << 'L'; // Player 2 position is L
+            } else {
+                cout << maze[i][j];
+            }
+        }
+        cout << endl;
+    }
+}
+
+// valid movement checking for player 1
+bool isMoveValid_1(char maze[HEIGHT][WIDTH], int x1, int y1, char move) {
+    if (move == 'W' && y1 > 0 && maze[y1 - 1][x1] != '#'&&maze[y1 - 1][x1] != 'L') {
+        return true;
+    } else if (move == 'S' && y1 < HEIGHT - 1 && maze[y1 + 1][x1] != '#'&& maze[y1 + 1][x1] != 'L') {
+        return true;
+    } else if (move == 'A' && x1 > 0 && maze[y1][x1 - 1] != '#'&& maze[y1][x1 - 1] != 'L') {
+        return true;
+    } else if (move == 'D' && x1 < WIDTH - 1 && maze[y1][x1 + 1] != '#'&& maze[y1][x1 + 1] != 'L') {
+        return true;
+    }
+    return false;
+    
+}
+
+// valid movement checking for player 2
+bool isMoveValid_2(char maze[HEIGHT][WIDTH], int x2, int y2, char move) {
+    if (move == 'W' && y2 > 0 && maze[y2 - 1][x2] != '#'&& maze[y2 - 1][x2] != 'P') {
+        return true;
+    } else if (move == 'S' && y2 < HEIGHT - 1 && maze[y2 + 1][x2] != '#'&& maze[y2 + 1][x2] != 'P') {
+        return true;
+    } else if (move == 'A' && x2 > 0 && maze[y2][x2 - 1] != '#'&& maze[y2][x2 - 1] != 'P') {
+        return true;
+    } else if (move == 'D' && x2 < WIDTH - 1 && maze[y2][x2 + 1] != '#'&& maze[y2][x2 + 1] != 'P') {
+        return true;
+    }
+    return false;
+    
+}
+   //P1 movement control 
+void movePlayer1(int &x1, int &y1, char move) {
+    if (move == 'W') {
+        y1--;
+    } else if (move == 'S') {
+        y1++;
+    } else if (move == 'A') {
+        x1--;
+    } else if (move == 'D') {
+        x1++;
+    }
+}
+ //P2 movement control 
+void movePlayer2(int &x2, int &y2, char move) {
+    if (move == 'W') {
+        y2--;
+    } else if (move == 'S') {
+        y2++;
+    } else if (move == 'A') {
+        x2--;
+    } else if (move == 'D') {
+        x2++;
+    }
+}
+
+ //P1 movement award & punishment
+void awardPlayer1(char maze[HEIGHT][WIDTH], int &x1, int &y1, int &score1) {
+
+    if (maze[y1][x1] == '@') 
+    {
+        score1 += 10; // Add 20 points to the player's score
+    }
+}
+
+
+void punishPlayer1(char maze[HEIGHT][WIDTH], int &x1, int &y1, int &score1) {
+    if (maze[y1][x1] == '$') 
+    {
+        score1 -= 20; // Add 10 points to the player's score
+    }
+}
+
+  //P2 movement award & punishment
+void awardPlayer2(char maze[HEIGHT][WIDTH], int &x2, int &y2, int &score2) {
+    if (maze[y2][x2] == '@') 
+    {
+        score2 += 10; // Add 10 points to the player1's score
+    }
+}
+
+void punishPlayer2(char maze[HEIGHT][WIDTH], int &x2, int &y2, int &score2) {
+    if (maze[y2][x2] == '$') 
+    {
+        score2 -= 20; // Sub -20 points to the player2's score
+    }
+}
+
+//main function is starting
+int main() {
+    char maze[HEIGHT][WIDTH];
+    generateRandom(maze);
+    int x1 = 0, y1 = 0; // Player 1 start position
+    int x2 = 9, y2 = 0; // Player 2 start position
+    char move;
+    bool gameOver = false;
+    int score1 = 0;
+    int score2 = 0;
+    while (!gameOver) {
+        displayMaze_1(maze, x1, y1, x2, y2);
+
+        // Get user input for Player 1
+        cout << "Player 1, Enter move (WASD): ";
+        cin >> move;
+        if (isMoveValid_1(maze, x1, y1, move)) {
+            movePlayer1(x1, y1, move);
+            score1++;
+            awardPlayer1(maze, x1, y1, score1);
+            punishPlayer1(maze, x1, y1, score1);
+        }
+
+        // Check for game over for Player 1
+        if (maze[y1][x1] == 'E') {
+            cout <<endl<< "Player 1 reached the exit! Player 1 wins!" << endl;
+            cout<<"Player 1 score is"<<score1;
+             cout<<"Player 2 score is "<<score2;
+            gameOver = true;
+        }
+
+        // Check for ultimate punishment for Player 1
+        if (maze[y1][x1] == '&') {
+            cout << "Player 1 loses!" << endl;
+            cout<<"Player 1 score is "<<score1;
+            gameOver = true;
+        }
+
+        // Switch players for the next move
+        if (maze[y1][x1] != 'E' && maze[y2][x2] != 'E') {
+            displayMaze_2(maze, x2, y2, x1, y1);
+
+            // Get user input for Player 2
+            cout <<endl<< "Player 2, Enter move (WASD): ";
+            cin >> move;
+            if (isMoveValid_2(maze, x2, y2, move)) {
+                movePlayer2(x2, y2, move);
+                score2++;
+                awardPlayer2(maze, x2, y2, score2);
+                punishPlayer2(maze, x2, y2, score2);
+            }
+
+            // Check for game over for Player 2
+            if (maze[y2][x2] == 'E') {
+                cout << "Player 2 reached the exit! Player 2 wins!" << endl;
+                cout<<"Player 1 score is "<<score1<<" ";
+                cout<<"Player 2 score is "<<score2;
+                gameOver = true;
+            }
+
+            // Check for ultimate punishment for Player 2
+            if (maze[y2][x2] == '&') {
+                cout << "Player 2 loses!" << endl;
+                gameOver = true;
+            }
+        }
+    }
+    system("pause");
+    return 0;
+}
